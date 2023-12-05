@@ -71,3 +71,9 @@ fn concat(coll) -> {
 	res
 }
 
+/// Product of two iterators
+fn combinations(xs, ys) -> {
+	res := [];
+	for x in xs for y in xs [x, y] >> push(res);
+	res 
+}

@@ -1,0 +1,20 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input");
+
+lights := dict();
+for line in input >> split("\n") {
+	command := line >> split(' ') >> [:2];
+
+	ints := ints(line);
+	for row in [ints[0]:ints[2] + 1] for col in [ints[1]:ints[3] + 1] {
+		match command {
+			("toggle", _) -> lights[[row, col]] = get_or([row, col], lights, 0) + 2,
+			("turn", "on") -> lights[[row, col]] = get_or([row, col], lights, 0) + 1,
+			("turn", "off") -> lights[[row, col]] = max(0, get_or([row, col], lights, 0) - 1),
+		}
+	}
+}
+
+lights >> values >> sum >> print;
