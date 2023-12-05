@@ -1,0 +1,33 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input");
+
+vowels := "aeiou";
+diss := ["ab", "cd", "pq", "xy"];
+
+nice := 0;
+for str in input >> split("\n") {
+	repeat := false;
+	pairs_found := false;
+
+	pairs := dict();
+	for ind in [1:len(str)] {
+		if ind > 1 and str[ind-2] == str[ind] repeat = true;
+
+		pair := str[ind-1:ind+1];
+		if pair >> in(pairs) {
+			if pairs[pair] < ind - 1 {
+				pairs_found = true;
+			}
+		}  else {
+			pairs[pair] = ind;
+		}
+	}
+
+	if pairs_found and repeat nice += 1;
+}
+
+nice >> print;
+
+
