@@ -1,0 +1,21 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input");
+
+floor := 0;
+
+for (ind, char) in input >> enumerate {
+	match char {
+		'(' -> floor += 1,
+		')' -> floor -= 1,
+	} 
+
+	if floor < 0 {
+		// Part 2 short-circuit
+		return ind+1;
+	}
+}
+
+// Part 1
+print(floor);
