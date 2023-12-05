@@ -1,0 +1,25 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input");
+
+add := \x, y -> x + y;
+mult := \x, y -> x * y;
+
+input 
+	>> split("\n") 
+	>> map(ints) 
+	>> map(\sides -> ( // The most convoluted way to compute this
+		combinations(sides, sides) >> map(prod) >> sum) 
+		- (zip(sides, sides) >> map(prod) >> sum)
+		+ (sort(sides) >> [:2] >> prod))
+	>> sum
+	>> print;
+
+input 
+	>> split("\n") 
+	>> map(ints) 
+	>> map(\sides -> sides >> sort >> [:2] >> sum >> mult(2) >> add(sides >> prod))
+	>> sum
+	>> print;
+
