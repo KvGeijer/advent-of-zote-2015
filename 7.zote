@@ -1,0 +1,43 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input");
+
+signals := input
+	>> split("\n")
+	>> map(\>> split(" -> ") >> rev)
+	>> dict;
+
+done := dict();
+fn comp(target) -> {
+	if target[0] >> is_digit return int(target);
+	if target >> in(done) return done[target];
+
+	instr := signals[target] >> split(" ");
+
+	res := if len(instr) == 1 {
+		comp(instr[0]) 
+	} else if instr[0] == "NOT" {
+		instr[1] >> comp >> bit_not
+	} else if instr[1] == "AND" {
+		(instr[0] >> comp) >> bit_and(instr[2] >> comp)
+	} else if instr[1] == "OR" {
+		(instr[0] >> comp) >> bit_or(instr[2] >> comp)
+	} else if instr[1] == "LSHIFT" {
+		(instr[0] >> comp) >> bit_lshift(instr[2] >> comp)
+	} else if instr[1] == "RSHIFT" {
+		(instr[0] >> comp) >> bit_rshift(instr[2] >> comp)
+	} else {
+		print("PANIK");
+		print(instr);
+	};
+
+	done[target] = res
+}
+
+"a" >> comp >> print :>> a;
+
+done = dict();
+done["b"] = a;
+
+"a" >> comp >> print :>> b;
