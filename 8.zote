@@ -1,0 +1,31 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input");
+
+fn extra_len(str) -> {
+	extra := 2;
+	ind := 1;
+	while ind < len(str)-1 {
+		if str[ind] == "\" and str[ind+1] == "\" {ind += 2; extra += 1; continue;}
+		if str[ind] == "\" and str[ind+1] == '"' {ind += 2; extra += 1; continue;}
+		if str[ind] == "\" and str[ind+1] == 'x' and ind < len(str) - 3 {ind += 4; extra += 3; continue;}
+		ind += 1;
+	}
+	extra
+}
+
+fn encode(str) -> {
+	encoded := '"';
+	ind := 0;
+	while ind < len(str) {
+		if str[ind] == '"' {ind += 1; encoded = encoded ++ '\"';}
+		else if str[ind] == '\' {ind += 1; encoded = encoded ++ '\\';}
+		else {str[ind] >> push(encoded); ind += 1};
+	}
+	'"' >> push(encoded);
+	encoded
+}
+
+input >> split("\n") >> map(\line -> (line >> encode >> len) - (line >> len)) >> sum >> print;
+
