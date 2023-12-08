@@ -1,0 +1,32 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> split("\n") >> [0];
+
+fn look_and_say(string) -> {
+	slen := len(string);
+
+	new := [];
+	i := 0;
+	while i < slen {
+		val := string[i];
+		count := 1;
+		while (i += 1) < slen and string[i] == val {
+			count += 1;
+		}  
+		for c in str(count) c >> push(new);
+		for c in str(val) c >> push(new);
+
+		// TODO: Why is appending so slow?
+		// new = new ++ map(str(count), id) ++ map(str(val), id);
+	}
+	new
+}
+
+// TODO: Why is it soooo much slower when working with strings instead of lists?
+string := input >> map(id);
+for i in [0:50] {
+	string = string >> look_and_say;
+	if i >> in([39, 49]) string >> len >> print;
+}
+
