@@ -1,0 +1,32 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input");
+
+nodes := set();
+edges := dict();
+
+not := \x -> !x;
+
+for line in input >> split("\n") {
+	words := line >> split(" ");
+	if !(words[0] >> in(edges)) { edges[words[0]] = [] }; [int(words[-1]), words[2]] >> push(edges[words[0]]);
+	if !(words[2] >> in(edges)) { edges[words[2]] = [] }; [int(words[-1]), words[0]] >> push(edges[words[2]]);
+
+	words[2] >> insert(nodes);
+	words[0] >> insert(nodes);
+}
+
+nbr_nodes := len(nodes);
+
+for opt in [minimum, maximum] {
+	fn dfs(node, visited) -> {
+		if len(visited) == nbr_nodes - 1 return 0;
+
+		dists := edges[node] >> filter(\>> [1] >> in(visited) >> not) >> map(\(dist, neigh) -> dist + dfs(neigh, visited ++ [node]));
+		if !dists (-opt([0, -9999])) else dists >> opt
+	}
+
+	nodes >> map(\>> [0] >> dfs([])) >> opt >> print; 
+} 
+
