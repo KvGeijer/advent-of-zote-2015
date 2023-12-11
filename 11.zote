@@ -1,0 +1,72 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> split("\n") >> [0];
+
+dis := "iol" >> map(to_ascii);
+
+fn valid(pwd) -> {
+	l := len(pwd);
+
+	pairs := 0;
+	last := false;
+	for i in [0:l-1] {
+		if pwd[i] == pwd[i+1] and !last {
+			pairs += 1;
+			last = true;
+		} else {
+			last = false;
+		}; 
+	}
+	if (pairs < 2) return false;
+
+	trip := false;
+	for i in [0:l-2] {
+		if pwd[i] + 2 == pwd[i+1] + 1 and pwd[i] + 2 == pwd[i+2] {
+			trip = true;
+			break;
+		} 
+	}
+	if !trip return false;
+	
+	for char in pwd if char >> in(dis) return false;
+
+	true
+}
+
+fn inc(pwd) -> {
+	for (i, char) in pwd >> enumerate >> rev {
+		if char + 1 >> in(dis) {
+			pwd[i] += 2;
+			return pwd
+		} else if char == to_ascii("z") {
+			pwd[i] = to_ascii("a");
+		} else {
+			pwd[i] = char + 1;
+			return pwd;
+		}
+	}
+	pwd >> push(to_ascii("a"));
+	pwd
+}
+
+fn update(pwd) -> {
+	while !valid(pwd) {
+		pwd = inc(pwd);
+	}
+	pwd
+}
+
+input 
+	>> list 
+	>> update 
+	>> map(from_ascii) 
+	>> join("") 
+	>> print 
+	>> list // part 2 
+	>> inc 
+	>> update 
+	>> map(from_ascii) 
+	>> join("") 
+	>> print;
+
