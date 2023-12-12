@@ -1,0 +1,55 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input");
+
+happy_map := dict();
+people := set();
+
+for line in input >> split("\n") {
+	words := line >> split(" ");
+	
+	diff := if words[2] == "gain" {
+		int(words[3])
+	} else {
+		-int(words[3])
+	};
+	words[0] >> insert(people);
+	happy_map[[words[0], words[-1][:-1]]] = diff;
+}
+
+bimap := dict();
+
+for from in people >> keys for to in people >> keys if from != to {
+	cost := happy_map[[from, to]] + happy_map[[to, from]];
+
+	bimap[[from, to]] = cost;
+	bimap[[to, from]] = cost;
+}
+
+fn dfs(visited) -> {
+	if len(visited) == len(people) return bimap[[visited[0], visited[-1]]];
+
+	vis := visited >> clone;
+	best := nil;
+	for (person, _) in people if person >> in(visited) >> not {
+		person >> push(vis);
+		res := dfs(vis) + if len(visited) == 0 0 else bimap[[visited[-1], person]];
+		person = vis >> pop;
+		if best == nil or res > best {
+			best = res;
+		}
+	}
+
+	best
+}
+
+dfs([]) >> print;
+
+for person in people >> keys {
+	bimap[["you", person]] = 0;
+	bimap[[person, "you"]] = 0;
+}
+"you" >> insert(people);
+
+dfs([]) >> print;
