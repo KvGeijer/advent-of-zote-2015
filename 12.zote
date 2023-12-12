@@ -1,0 +1,98 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> split("\n") >> [0];
+
+// Part 1
+input >> ints >> sum >> print;
+
+ind := 0;
+
+fn adv() -> {
+	// print("Adv ", ind, " to ", ind + 1, " with char ", input[ind]);
+	ind += 1;
+}
+
+fn parse() -> {
+	// print("Parsing at ", ind);
+	match input[ind] {
+		'[' -> {
+			adv();
+			list := [];
+			if input[ind] != ']' {
+				parse() >> push(list);
+				while input[ind] == ',' {
+					adv();
+					parse() >> push(list);
+				}
+				adv();
+				list
+			} else {
+				adv();
+				list
+			}
+		}
+		'{' -> {
+			adv();
+			if input[ind] == "}" {
+				dict();
+			} else {
+				d := dict();
+				key := parse();
+				// print("Parsed key ", key);
+				adv();
+				val := parse();
+				// print("key: ", key, ", val: ", val);
+				d[key] = val;
+				while input[ind] == ',' {
+					adv();
+					key := parse();
+					adv();
+					val := parse();
+					d[key] = val;
+				}
+				adv();
+				d
+			}
+		}
+		'"' -> {
+			adv();
+			read := "";
+			while input[ind] != '"' {
+				input[ind] >> push(read);
+				adv();
+			}
+			adv();
+			read
+		}
+		dig -> {
+			neg := false;
+			if input[ind] == '-' {
+				adv();
+				neg = true;
+			}
+			i := 0;
+			while is_digit(input[ind]) {
+				i = i * 10 + int(input[ind]);
+				adv();
+			}
+			if neg {-i} else i
+		} 
+	}
+}
+
+fn comp(val) -> {
+	match type_of(val) {
+		"Int" -> val,
+		"List" -> val >> map(comp) >> sum,
+		"Dictionary" -> {
+			if val >> values >> any(\>> eq("red")) 
+				0
+			else 
+				(val >> values >> map(comp) >> sum) + (val >> keys >> map(comp) >> sum)
+		}
+		_ -> 0,
+	}
+}
+
+parse() >> comp >> print;
