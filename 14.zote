@@ -1,0 +1,33 @@
+include!("stdlib");
+include!("aoc.zote");
+
+states := read("input")
+	>> split('\n')
+	>> map(ints)
+	>> map(\(speed, sl, rl) -> [0, 0, speed, sl, rl + sl, 0]);
+
+for t in [0:2503] {
+	best := 0;
+	bis := [];
+
+	for (ind, state) in states >> enumerate {
+		if state[1] < state[3] {
+			state[0] += state[2];
+		}
+
+		if state[0] > best {
+			best = state[0];
+			bis = [ind];
+		} else if state[0] == best {
+			ind >> push(bis);
+		}
+
+		state[1] += 1;
+		if state[1] == state[4] state[1] = 0;
+	}
+
+	for bi in bis states[bi][-1] += 1;
+}
+
+states >> map(\>> [0]) >> maximum >> print;
+states >> map(\>> [-1]) >>  maximum >> print;
