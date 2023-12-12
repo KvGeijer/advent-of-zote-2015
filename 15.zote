@@ -1,0 +1,69 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> split("\n") >> map(ints);
+
+// Fun hard-coded fast solution
+for check in [\>> const(true), \>> eq(500)] {
+	best := 0;
+	for i1 in [0:100]
+		for i2 in [0:100-i1]
+			for i3 in [0:100-i1-i2] {
+					i4 := 100 - i1 - i2 - i3;
+					if i4 < 0 continue;
+
+					cal := input[0][4]*i1 + input[1][4]*i2 + input[2][4]*i3 + input[3][4]*i4;
+					if !check(cal) continue;
+
+					score := 1;
+					for i in [0:4] {
+						prop := input[0][i]*i1 + input[1][i]*i2 + input[2][i]*i3 + input[3][i]*i4;
+						if prop < 0 prop = 0;
+						score *= prop;
+					
+					}
+
+
+					if score > best best = score;
+					if i2 == 0 and i4 == 0 and i3 == 0 print(i1, " ", i1+i2+i3+i4);
+				}
+
+	best >> print;
+}
+
+// "Good" general solution
+fn rec(used, ind, left, check) -> {
+	if ind == len(input) - 1 {
+
+		cal := used >> enumerate >> map(\(row, use) -> input[row][-1]*use) >> sum >> add(input[-1][-1]*(100 - sum(used)));
+		if !check(cal) return 0;
+
+		100 - sum(used) >> push(used);
+		props := [0, 0, 0, 0];
+		for (row, line) in input >> enumerate
+			for (col, prop) in line[:4] >> enumerate {
+				props[col] += used[row]*prop;
+			}
+
+		score := if props >> any(\>> leq(0)) 0
+		else props >> prod;
+
+		used >> pop;
+
+		return score
+	}
+
+	best := 0;
+	for use in [0:left] {
+		use >> push(used);
+		val := rec(used, ind + 1, left - use, check);
+		used >> pop;
+
+		if val > best best = val;
+	}
+	best
+}
+
+for check in [\>> const(true), \>> eq(500)] rec([], 0, 100, check) >> print;
+
+
