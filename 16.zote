@@ -1,0 +1,34 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input");
+
+real := dict([
+	["children", 3],
+	["cats", 7],
+	["samoyeds", 2],
+	["pomeranians", 3],
+	["akitas", 0],
+	["vizslas", 0],
+	["goldfish", 5],
+	["trees", 3],
+	["cars", 2],
+	["perfumes", 1],
+]);
+
+for (ind, line) in input >> split("\n") >> enumerate {
+	items := line >> [if ind >= 99 9 else if ind >= 9 8 else 7:] >> split(", ") >> map(\>> split(': '));
+	if items >> all(\(key, val) -> real[key] == int(val)) {
+		print(ind + 1);
+	}
+	if items >> all(\(key, val) -> match key {
+		"cats" -> real[key] < int(val),
+		"trees" -> real[key] < int(val),
+		"pomeranians" -> real[key] > int(val),
+		"goldfish" -> real[key] > int(val),
+		key -> real[key] == int(val),
+	}) {
+		print(ind + 1);
+	}
+
+}
