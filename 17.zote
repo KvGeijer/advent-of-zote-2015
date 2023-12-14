@@ -1,0 +1,41 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input");
+lines := input >> split("\n");
+
+cont := lines >> map(int) >> rev >> sort;
+conts := len(cont);
+lit := 150;
+
+fn combs(liters, conti) -> {
+	if liters < 0 return 0;
+	if liters == 0 return 1;
+	if conti == conts return 0;
+
+	combs(liters - cont[conti], conti+1) + combs(liters, conti + 1)
+}
+
+lit >> combs(0) >> print;
+
+fn fewest_conts(liters, conti) -> {
+	if liters < 0 return 999999;
+	if liters == 0 return 0;
+	if conti == conts return 999999;
+
+	min(fewest_conts(liters - cont[conti], conti+1) + 1, fewest_conts(liters, conti + 1))
+}
+
+lit >> fewest_conts(0) :>> ncombs;
+
+fn limited_combs(liters, conti, used) -> {
+	if used > ncombs return 0;
+	if liters < 0 return 0;
+	if liters == 0 return 1;
+	if conti == conts return 0;
+
+	limited_combs(liters - cont[conti], conti+1, used + 1) + limited_combs(liters, conti + 1, used)
+}
+
+lit >> limited_combs(0, 0) >> print;
+
