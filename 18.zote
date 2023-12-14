@@ -1,0 +1,41 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input");
+
+lights := dict();
+for (row, line) in input >> split("\n") >> map(\>> map(\>> eq('#'))) >> enumerate 
+	for (col, bool) in line >> enumerate 
+		lights[[row, col]] = bool;
+
+lc := lights;
+
+fn update() -> {
+	next := dict();
+	for (coord, bool) in lights {
+		neighs := coord >> neighs8 >> map(\>> get_or(lights, false)) >> sum;
+		next[coord] = if bool and (neighs == 2 or neighs == 3) true
+			else if !bool and neighs == 3 true
+			else false;
+	}
+	lights = next;
+}
+
+for _ in [0:100] update();
+
+lights >> values >> sum >> print;
+
+lights = lc;
+lights[[0, 99]] = true;
+lights[[99, 99]] = true;
+lights[[99, 0]] = true;
+lights[[0, 0]] = true;
+for _ in [0:100] {
+	update();
+	lights[[0, 99]] = true;
+	lights[[99, 99]] = true;
+	lights[[99, 0]] = true;
+	lights[[0, 0]] = true;
+}
+lights >> values >> sum >> print;
+
