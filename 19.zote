@@ -1,0 +1,57 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input");
+(repl, string) := input >> split("\n\n");
+repl = repl >> split('\n') >> map(\>> split(" => "));
+
+ways := set();
+for rep in repl {
+	(from, to) := rep;
+
+	fl := len(from);
+
+	for i in [0:len(string)+1-fl] {
+		if string[i:i+fl] == from {
+			(string[:i] ++ to ++ string[i+fl:]) >> insert(ways);
+		}
+	}
+}
+
+ways >> len >> print;
+
+// /// Do something smart. I know it is an unambiguous grammar when it comes to step len. So if I can construct something one way, I cannot do it another way. But that only applies to the whole string, not parts of it.
+
+fn find_one(string, pattern) -> {
+	fl := len(pattern);
+	for i in [0:len(string)+1-fl] {
+		if string[i:i+fl] == pattern {
+			return i;
+		}
+	}
+	nil
+}
+
+fn try_solve() -> {
+	steps := 0;
+	current := string >> split("\n") >> [0];
+	while current != "e" {
+		steps += 1;
+		fn one_repl() -> {
+			for (from, to) in repl {
+				i := find_one(current, to);
+				if i != nil {
+					return current[:i] ++ from ++ current[i+len(to):];
+				}
+			}
+		}
+		current = one_repl();
+		if current == nil return false;
+	}
+	print(steps);
+	true
+}
+
+while !try_solve() {
+	repl = repl >> shuffle;
+}
