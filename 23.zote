@@ -1,0 +1,25 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input");
+lines := input >> split("\n") >> map(\>> split(" "));
+
+for start in [0, 1] {
+	regs := dict([["a", start], ["b", 0]]);
+
+	ind := 0;
+	while ind < len(lines) {
+		words := lines[ind];
+
+		match words {
+			("hlf", reg) -> {ind += 1; regs[reg] /= 2},
+			("inc", reg) -> {ind += 1; regs[reg] += 1},
+			("tpl", reg) -> {ind += 1; regs[reg] *= 3},
+			("jmp", off) -> {ind += ints(off)[0]},
+			("jie", (reg, ","), off) -> {ind += if (regs[reg]%2)==0 ints(off)[0] else 1},
+			("jio", (reg, ","), off) -> {ind += if regs[reg]==1 ints(off)[0] else 1},
+		}
+	}
+
+	print(regs["b"]);
+}
