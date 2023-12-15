@@ -1,0 +1,66 @@
+include!("stdlib");
+include!("aoc.zote");
+
+(boss_hp, boss_atk) := read("input") >> ints;
+
+
+// Optimize for mana usage (probably time in part 2?)
+// So we need some caching for mana?
+
+// [hp, mana, shield, poison, reacharge, boss_hp]
+state := [50+boss_atk, 500, 0, 0, 0, boss_hp];
+
+
+fn fight(hard) -> {
+	states := priority_queue();
+	state >> push_pq(0, states);
+
+	while true {
+		(spent, (hp, mana, shield, poison, rech, boss)) := states >> pop;
+		if mana < 0 continue; // Could not have got here
+	
+		// Effects on boss turn
+		if rech > 0 mana += 101;
+
+		if poison > 0 boss -= 3;
+		if boss <= 0 return -spent;
+
+		// Boss turn
+		boss_dmg := max(1, boss_atk - if shield > 0 7 else 0);
+		hp = hp - boss_dmg;
+		if hp <= 0 continue;
+
+
+		// Your turn
+		hp -= hard;
+		if hp <= 0 continue;
+		
+		if poison > 1 boss -= 3;
+		if boss <= 0 return -spent;
+
+		if rech > 1 mana += 101;
+
+
+		// We can cast each spell (do we want to add heuristics? Such as liking poison?)
+
+		// mm
+		[hp, mana-53, shield-2, poison-2, rech-2, boss-4] >> push_pq(spent - 53, states);
+
+		// Drain
+		[hp+2, mana-73, shield-2, poison-2, rech-2, boss-2] >> push_pq(spent-73, states);
+
+		// Shield
+		[hp, mana-113, 6, poison-2, rech-2, boss] >> push_pq(spent-113, states);
+
+		// Poison
+		[hp, mana-173, shield-2, 6, rech-2, boss] >> push_pq(spent-173, states);
+
+		// Rech
+		[hp, mana-229, shield-2, poison-2, 5, boss] >> push_pq(spent-229, states);
+
+		// Do nothing (OBS: THis is dangerous and we should maybe not allow it until the end)
+		// [hp, mana, shield-2, poison-2, rech-2, boss] >> push_pq(spent, states);
+	}
+}
+
+for hard in [false, 1] fight(hard) >> print;
