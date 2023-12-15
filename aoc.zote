@@ -29,7 +29,8 @@ fn ints(string) -> {
 		neg = char == '-';
 	}
 	
-	if nbr != nil nbr >> push(ints);
+	last := (if neg (-nbr) else nbr);
+	if last != nil last >> push(ints);
 
 	ints
 }
