@@ -1,0 +1,35 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> ints >> rev;
+
+for d in [3, 4] {
+	
+	each := input >> sum >> div(d);
+
+	// Find all ways to pick packages from list so that we sum to each
+	fn dfs(packages, next, weight) -> {
+		if next >= len(packages) return [];
+		// print(weight, " ", next);
+
+		if weight == 11 and next == 2 {
+			print("FOUND IT!");
+			return
+		}
+
+		// Either we picke the package
+		{
+			w := packages[next];
+			new_weight := weight + w;
+			if new_weight > each []
+			else if new_weight == each return [[w]]
+			else dfs(packages, next + 1, new_weight) >> map(\poss -> {w >> push(poss); poss})
+		} ++
+		// Or we dont
+		{
+			dfs(packages, next + 1, weight)
+		}
+	}
+
+	dfs(input, 0, 0) >> map(\way -> [len(way), prod(way)]) >> sort >> [0] >> [1] >> print;
+}
