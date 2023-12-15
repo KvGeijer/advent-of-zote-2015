@@ -1,0 +1,62 @@
+include!("stdlib");
+include!("aoc.zote");
+
+(boss_hp, boss_dmg, boss_def) := read("input") >> ints;
+
+weapons := [
+	[8, 4],
+	[10, 5],
+	[25, 6],
+	[40, 7],
+	[74, 8],
+];
+
+armor := [
+	[13, 1],
+	[31, 2],
+	[53, 3],
+	[75, 4],
+	[102, 5],
+];
+
+rings := [
+	[25, 1, 0],
+	[50, 2, 0],
+	[100, 3, 0],
+	[20, 0, 1],
+	[40, 0, 2],
+	[80, 0, 3],
+];
+
+fn win(dmg, def) -> {
+	you_dmg := max(dmg-boss_def, 1);
+	boss_dmg := max(boss_dmg-def, 1);
+	turns := (boss_hp + you_dmg - 1)/you_dmg;
+	(100 + boss_dmg - 1)/boss_dmg >= turns
+}
+
+cheapest := 10000;
+worst := 0;
+
+[0, 0] >> push(armor);
+[0, 0, 0] >> push(rings);
+for (wcost, wdmg) in weapons {
+	for (acost, adef) in armor {
+		for (r1cost, r1atk, r1def) in rings {
+			for (r2cost, r2atk, r2def) in rings if r2cost == 0 or r2cost != r1cost {
+				cost := wcost + acost + r1cost + r2cost;
+				if win(wdmg + r1atk + r2atk, adef + r1def + r2def) {
+					cheapest = min(cheapest, cost);
+				} else {
+					worst = max(worst, cost);
+				}
+				
+			}
+			
+		}
+	
+	}
+}
+
+cheapest >> print;
+worst >> print;
