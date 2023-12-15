@@ -1,0 +1,7 @@
+# Part 1
+Can you write and run some python code for me?
+
+I want to find the lowest non-negative integer x, such that the md5-hash of "yzbqklnj" + str(x) starts with five leading zeroes. 
+
+# Part 2
+Thank you, that was correct. But can you do it again, but searching for the x such that the hash starts with 6 zeros?
