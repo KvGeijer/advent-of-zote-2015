@@ -1,0 +1,11 @@
+include!("stdlib");
+include!("aoc.zote");
+
+(row, col) := read("input") >> ints;
+
+ord := ([1:col] >> sum) + ([1:row-1] >> sum) + col*row;
+
+code := 20151125;
+for _ in [0:ord-1] code = (code*252533) % 33554393;
+
+print(code);
