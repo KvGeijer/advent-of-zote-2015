@@ -1,0 +1,29 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim;
+lines := input >> split("\n");
+
+twice := 0;
+thrice := 0;
+
+for line in lines {
+	d := dict();
+	for c in line {
+		if c >> in(d) d[c] += 1 else d[c] = 1;
+	}
+	if 2 >> in(d >> values) twice +=1;
+	if 3 >> in(d >> values) thrice +=1;
+}
+
+print(twice *thrice);
+
+for l1 in lines for l2 in lines {
+	common := "";
+	for (c1, c2) in zip(l1, l2) {
+		if c1 == c2 push(c1, common);
+	}
+	if len(common) == len(l1) -1 {
+		return common;
+	}
+}
