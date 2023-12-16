@@ -1,0 +1,30 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim;
+lines := input >> split("\n");
+
+karta := dict();
+for line in lines {
+	(id, row, col, r, c) := ints(line);
+
+	for rr in [row:row+r] for cc in [col:col+c] {
+		pos := [rr, cc];
+		if pos >> in(karta) id >> push(karta[pos])
+		else karta[pos] = [id];
+	}
+}
+
+karta >> values >> filter(\>> len >> geq(2)) >> len >> print;
+
+nposs := set();
+
+for ids in karta >> values {
+	if len(ids) > 1 for id in ids {
+		id >> insert(nposs);
+	}
+}
+
+for id in [1:1332] {
+	if !(id >> in(nposs)) return id;
+}
