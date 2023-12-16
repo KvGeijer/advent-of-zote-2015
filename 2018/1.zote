@@ -1,0 +1,20 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim;
+lines := input >> split("\n");
+
+input >> ints >> sum >> print;
+
+i := 0;
+fount := set();
+freq := 0;
+ints := input >> ints;
+while true {
+	int := ints[i % len(lines)];
+	freq += int;
+	
+	if freq >> in(fount) return freq;
+	freq >> insert(fount);
+	i += 1;
+}
