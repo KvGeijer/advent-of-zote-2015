@@ -1,0 +1,50 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim;
+lines := input >> split("\n");
+lines = lines >> sort;
+
+guards := dict();
+curr := nil;
+fall := nil;
+for line in lines {
+	words := line >> split(" ");
+	if words[-1] == "shift" {
+		curr = line >> ints >> [-1];
+	}
+	else if words[-1] == "asleep" {
+		fall = line >> ints >> [-1];
+	} else {
+		time := line >> ints >> [-1];
+		// time -= fall;
+		if curr >> in(guards) >> not guards[curr] = [];
+		for t in [fall:time] t >> push(guards[curr]);
+	}
+}
+
+gc := dict();
+for (k,v) in guards {
+	gc[k] = len(v);
+}
+
+best := gc >> values >> maximum;
+for (k,v) in gc if v == best {
+	counts := guards[k] >> count;
+	best := counts >> values >> maximum;
+	for (key, c) in counts if c == best {
+		key*int(k) >> print;
+		break;
+	}
+}
+
+res2 := [];
+for (id, mins) in guards {
+	counts := mins >> count;
+	counts >> list >> map(rev) >> maximum >> append([id]) >> push(res2);
+}
+
+res2 >> maximum >> [1:] >> prod >> print;
+
+
+
