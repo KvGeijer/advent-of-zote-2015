@@ -1,0 +1,112 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim;
+input = input[1:];
+
+karta := dict();
+
+i := 0;
+fn parse() -> {
+	paths := [];
+	path := [];
+	while true {
+		match input[i] {
+			'|' -> {
+				path >> push(paths);
+				path = [];
+				i += 1;
+			}
+			'(' -> {
+				i += 1;
+				parse() >> push(path);
+			}
+			')' -> {
+				i += 1;
+				path >> push(paths);
+				return paths;
+			}
+			'$' -> {
+				// i += 1;
+				return path;
+			}
+			char -> {
+				i += 1;
+				char >> push(path);
+			}
+		}
+	}
+}
+
+reg := parse();
+
+karta := dict();
+
+fn build(poss, path) -> {
+	for step in path {
+		next := set();
+		match step {
+			'N' -> for pos in poss >> keys {
+				to := vadd([-1, 0], pos); 
+				[pos, to] >> insert(karta);
+				[to, pos] >> insert(karta);
+				to >> insert(next);  
+			},
+			'E' -> for pos in poss >> keys {
+				to := vadd([0, 1], pos); 
+				[pos, to] >> insert(karta);
+				[to, pos] >> insert(karta);
+				to >> insert(next);  
+			},
+			'W' -> for pos in poss >> keys {
+				to := vadd([0, -1], pos); 
+				[pos, to] >> insert(karta);
+				[to, pos] >> insert(karta);
+				to >> insert(next);  
+			},
+			'S' -> for pos in poss >> keys {
+				to := vadd([1, 0], pos); 
+				[pos, to] >> insert(karta);
+				[to, pos] >> insert(karta);
+				to >> insert(next);  
+			},
+			branch -> {
+				for bpath in branch {
+					for p in build(poss, bpath) >> keys insert(p, next);
+				}
+			}
+		}
+		poss = next;
+	} 
+	poss
+}
+
+build(set([[0,0]]), reg);
+
+visited := set();
+round := 0;
+best := 0;
+far := 0;
+
+
+reach := [];
+[0, 0] >> push(reach);
+while reach {
+	next := [];
+	for pos in reach {
+		if pos >> in(visited) continue;
+		pos >> insert(visited);
+		best = round;
+		if round >= 1000 far += 1;
+		
+		for neigh in neighs4(pos) if [pos, neigh] >> in(karta) {
+			neigh >> push(next);
+		}
+	}
+
+	round += 1;
+	reach = next;
+}
+
+print(best);
+print(far);
