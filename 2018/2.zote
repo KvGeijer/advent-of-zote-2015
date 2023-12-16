@@ -8,10 +8,7 @@ twice := 0;
 thrice := 0;
 
 for line in lines {
-	d := dict();
-	for c in line {
-		if c >> in(d) d[c] += 1 else d[c] = 1;
-	}
+	d := count(line);
 	if 2 >> in(d >> values) twice +=1;
 	if 3 >> in(d >> values) thrice +=1;
 }
