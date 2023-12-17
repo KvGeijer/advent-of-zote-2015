@@ -1,0 +1,94 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim;
+lines := input >> split("\n");
+
+
+fn addr(a, b, c, regs) -> {
+	regs[c] = regs[a] + regs[b];
+} 
+
+fn addi(a, b, c, regs) -> {
+	regs[c] = regs[a] + b;
+} 
+
+fn mulr(a, b, c, regs) -> {
+	regs[c] = regs[a] * regs[b];
+} 
+
+
+fn muli(a, b, c, regs) -> {
+	regs[c] = regs[a] * b;
+} 
+
+
+fn banr(a, b, c, regs) -> {
+	regs[c] = regs[a] >> bit_and(regs[b]);
+} 
+
+fn bani(a, b, c, regs) -> {
+	regs[c] = regs[a] >> bit_and(b);
+} 
+
+fn borr(a, b, c, regs) -> {
+	regs[c] = regs[a] >> bit_or(regs[b]);
+} 
+
+fn bori(a, b, c, regs) -> {
+	regs[c] = regs[a] >> bit_or(b);
+} 
+
+fn setr(a, b, c, regs) -> {
+	regs[c] = regs[a];
+} 
+
+fn seti(a, b, c, regs) -> {
+	regs[c] = a;
+} 
+
+fn gtir(a, b, c, regs) -> {
+	regs[c] = a > regs[b] >> int;
+} 
+
+fn gtri(a, b, c, regs) -> {
+	regs[c] = regs[a] > b >> int;
+} 
+
+fn gtrr(a, b, c, regs) -> {
+	regs[c] = regs[a] > regs[b] >> int;
+} 
+
+fn eqir(a, b, c, regs) -> {
+	regs[c] = a == regs[b] >> int;
+} 
+
+fn eqri(a, b, c, regs) -> {
+	regs[c] = regs[a] == b >> int;
+} 
+
+fn eqrr(a, b, c, regs) -> {
+	regs[c] = regs[a] == regs[b] >> int;
+} 
+
+imap := [["addr", addr], ["addi", addi], ["mulr", mulr], ["muli", muli], ["banr", banr], ["bani", bani], ["borr", borr], ["bori", bori], ["setr", setr], ["seti", seti], ["gtir", gtir], ["gtri", gtri], ["gtrr", gtrr], ["eqir", eqir], ["eqri", eqri], ["eqrr", eqrr]] >> dict;
+
+ipi := input >> ints >> [0];
+prog := input >> split('\n') >> [1:] >> map(\line -> [line[:4], ints(line)]);
+
+for start in [0:1001] {
+	regs := [start, 0, 0, 0, 0, 0];
+	
+	steps := 0;
+	while regs[ipi] < len(prog) and regs[ipi] >= 0 {
+		if regs[ipi] == 28 {
+			print("Part 1: ", regs[4]);
+			return
+		}
+		steps += 1;
+	
+		(op, (a, b, c)) := prog[regs[ipi]];
+		imap[op](a, b, c, regs);
+		regs[ipi] += 1;
+	}
+}
