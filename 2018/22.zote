@@ -1,0 +1,62 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim;
+lines := input >> split("\n");
+
+depth := lines[0] >> ints >> [0];
+(tx, ty) := lines[1] >> ints;
+
+ero := [];
+for y in [0:ty*10] {
+	[] >> push(ero);
+	for x in [0:tx*200] {
+		(if y == 0 (16807*x + depth) % 20183 else if x == 0 (48271*y+depth) % 20183 else (ero[y-1][x]*ero[y][x-1]+depth) % 20183) >> push(ero[-1]);
+	}
+}
+ero[ty][tx] = 0;
+
+types := ero >> map(\>> map(\int -> int % 3));
+
+risk := 0;
+for x in [0:tx + 1] for y in [0:ty + 1] {
+	risk += types[y][x];
+}
+risk >> print;
+
+for ts in types {
+	cs := "";
+	for t in ts {
+		match t {
+			0 -> '.',
+			1 -> '=',
+			2 -> '|',
+		} >> push(cs);
+	}
+	// print(cs);
+}
+
+vis := set();
+prioq := priority_queue();
+[[0, 0], 1] >> push_pq(-0, prioq);
+
+while prioq {
+	(time, state) := prioq >> pop;
+	if state >> in(vis) continue;
+	state >> insert(vis);
+
+	if state == [[tx, ty], 1] {
+		return -time;
+	}
+	
+	(pos, tool) := state;
+	for neigh in pos >> neighs4 if neigh[0] >= 0 and neigh[1] >= 0 {
+		(x, y) := neigh;
+		if types[y][x] != tool {
+			[neigh, tool] >> push_pq(time - 1, prioq);
+		}
+	}
+	for t in [0:3] if t != tool and t != types[pos[1]][pos[0]] {
+		[pos, t] >> push_pq(time - 7, prioq);
+	}
+}
