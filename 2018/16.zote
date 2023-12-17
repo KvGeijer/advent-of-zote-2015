@@ -1,0 +1,160 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim;
+lines := input >> split("\n");
+
+fn addr(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] + regs[b];
+	out
+} 
+
+fn addi(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] + b;
+	out
+} 
+
+fn mulr(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] * regs[b];
+	out
+} 
+
+
+fn muli(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] * b;
+	out
+} 
+
+
+fn banr(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] >> bit_and(regs[b]);
+	out
+} 
+
+fn bani(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] >> bit_and(b);
+	out
+} 
+
+fn borr(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] >> bit_or(regs[b]);
+	out
+} 
+
+fn bori(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] >> bit_or(b);
+	out
+} 
+
+fn setr(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a];
+	out
+} 
+
+fn seti(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = a;
+	out
+} 
+
+fn gtir(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = a > regs[b] >> int;
+	out
+} 
+
+fn gtri(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] > b >> int;
+	out
+} 
+
+fn gtrr(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] > regs[b] >> int;
+	out
+} 
+
+fn eqir(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = a == regs[b] >> int;
+	out
+} 
+
+fn eqri(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] == b >> int;
+	out
+} 
+
+fn eqrr(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] == regs[b] >> int;
+	out
+} 
+
+instrs := [addr, addi, mulr, muli, banr, bani, borr, bori, setr, seti, gtir, gtri, gtrr, eqir, eqri, eqrr];
+
+fn canbe(a, b, c, before, after) -> {
+	poss := [];
+	for (ii, instr) in instrs >> enumerate if instr(a, b, c, before) == after {
+		ii >> push(poss);
+	}
+	poss
+}
+
+p1 := 0;
+secs := input >> split("\n\n") >> [:-1];
+for sec in secs {
+	lines := sec >> split("\n");
+	before := lines[0] >> ints;
+	after := lines[-1] >> ints;
+	(op, a, b, c) := lines[1] >> ints;
+
+	if canbe(a, b, c, before, after) >> len >> geq(3) p1 += 1;
+}
+p1 >> print;
+
+// Find mapping opcode -> instrs ind
+mapping := [0:len(instrs)] >> map(\>> const([0:len(instrs)]));
+
+known := set();
+while !all(mapping, \>> len >> eq(1)) {
+	for sec in secs {
+		lines := sec >> split("\n");
+		(op, a, b, c) := lines[1] >> ints;
+
+		if len(mapping[op]) == 1 continue;
+		
+		before := lines[0] >> ints;
+		after := lines[-1] >> ints;
+
+		poss := canbe(a, b, c, before, after) >> filter(\>> in(known) >> not);
+		mapping[op] = poss;
+
+		if len(poss) == 1 poss[0] >> insert(known);
+	}
+}
+
+mapping = mapping >> map(\>> [0]);
+
+prog := input >> split('\n\n\n') >> [-1] >> split("\n") >> map(ints);
+
+regs := [0, 0, 0, 0];
+for (op, a, b, c) in prog {
+	id := mapping[op];
+	regs = instrs[id](a, b, c, regs);
+}
+
+regs >> [0] >> print;
+
+
