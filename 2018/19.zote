@@ -1,0 +1,135 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim;
+lines := input >> split("\n");
+
+fn addr(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] + regs[b];
+	out
+} 
+
+fn addi(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] + b;
+	out
+} 
+
+fn mulr(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] * regs[b];
+	out
+} 
+
+
+fn muli(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] * b;
+	out
+} 
+
+
+fn banr(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] >> bit_and(regs[b]);
+	out
+} 
+
+fn bani(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] >> bit_and(b);
+	out
+} 
+
+fn borr(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] >> bit_or(regs[b]);
+	out
+} 
+
+fn bori(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] >> bit_or(b);
+	out
+} 
+
+fn setr(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a];
+	out
+} 
+
+fn seti(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = a;
+	out
+} 
+
+fn gtir(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = a > regs[b] >> int;
+	out
+} 
+
+fn gtri(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] > b >> int;
+	out
+} 
+
+fn gtrr(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] > regs[b] >> int;
+	out
+} 
+
+fn eqir(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = a == regs[b] >> int;
+	out
+} 
+
+fn eqri(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] == b >> int;
+	out
+} 
+
+fn eqrr(a, b, c, regs) -> {
+	out := regs >> clone;
+	out[c] = regs[a] == regs[b] >> int;
+	out
+} 
+
+imap := [["addr", addr], ["addi", addi], ["mulr", mulr], ["muli", muli], ["banr", banr], ["bani", bani], ["borr", borr], ["bori", bori], ["setr", setr], ["seti", seti], ["gtir", gtir], ["gtri", gtri], ["gtrr", gtrr], ["eqir", eqir], ["eqri", eqri], ["eqrr", eqrr]] >> dict;
+
+ipi := input >> ints >> [0];
+prog := input >> split('\n') >> [1:] >> map(\line -> [line[:4], ints(line)]);
+
+regs := [0, 0, 0, 0, 0, 0];
+
+while regs[ipi] < len(prog) and regs[ipi] >= 0 {
+	
+	(op, (a, b, c)) := prog[regs[ipi]];
+	fun := imap[op];
+	regs = fun(a, b, c, regs);
+	regs[ipi] += 1;
+}
+
+regs >> [0] >> print;
+
+// Part 2
+r0 := 0;
+r3 := 10551374;
+for r4 in [1:r3+1] {
+    if r3 % r4 == 0 {
+        for r5 in [1:r3+1] {
+    	    if r4*r5 == r3 {
+    	        r0 += r4;
+    	    }
+    	}
+    }
+	
+}
+print(r0);
