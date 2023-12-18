@@ -1,0 +1,33 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim;
+lines := input >> split("\n");
+
+ldiff := to_ascii('a') - to_ascii('A') >> abs;
+
+stack := [];
+
+for c in input {
+	if stack and (to_ascii(stack[-1]) - to_ascii(c) >> abs >> eq(ldiff)) {
+		stack >> pop;
+	} else {
+		c >> push(stack);
+	}
+}
+lowest := stack >> len >> print;
+
+for c in [to_ascii('a'): to_ascii('z') + 1] {
+	trimmed := input >> filter(\cc -> to_ascii(cc) != c and to_ascii(cc) != c-ldiff);
+	stack := [];
+	for c in trimmed {
+		if stack and (to_ascii(stack[-1]) - to_ascii(c) >> abs >> eq(ldiff)) {
+			stack >> pop;
+		} else {
+			c >> push(stack);
+		}
+	}
+	lowest = min(lowest, stack >> len);
+}
+
+lowest >> print;
