@@ -1,0 +1,32 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim;
+lines := input >> split("\n");
+
+bots := lines >> map(\line -> [ints(line)[:3], ints(line)[-1]]);
+
+dist := \p1, p2 -> zip(p1, p2) >> map(\(a, b) -> abs(a-b)) >> sum;
+
+// Part 1
+m := bots >> map(\>> [-1]) >> maximum;
+for (pos, r) in bots if r == m {
+	reach := 0;
+	for (other, _) in bots if dist(pos, other) <= r {
+		reach += 1;
+	}
+	print("Best nanobot: ", reach);
+}
+
+// Part 2. Find the point with the most overlaps. Can we traverse all points on the edges?
+// Should be complexity of r*4*1000 = 4*10^11. A bit too high? Can we try? Do it for one?
+// No! That would be the case if it was 2D. Now we actually have r^2 nbr of edge points...
+
+// They are relatively tightly packed. Most bots have some intersection
+// for (self, r) in bots {
+// 	reach := 0;
+// 	for (other, ro) in bots if dist(self, other) < r + ro {
+// 		reach += 1;
+// 	}
+// 	print("Potential: ", reach);
+// }
