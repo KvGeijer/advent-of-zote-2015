@@ -1,0 +1,93 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim;
+lines := input >> split("\n");
+
+fn parse(line) -> {
+		// ([units, hp each, dmg, initiative], [immune?, weak?], attack-type)
+		group := dict();
+		(group['units'], group['hp'], group['dmg'], group['initiative']) = ints(line);
+		(group['weak'], group['immune']) = [['nothing'], ['nothing']];
+		if '(' >> in(line) 
+			for desc in line >> split('(') >> [1] >> split(')') >> [0] >> split('; ') >> map(\>> split(' ')) group[desc[0]] = desc[2:] >> join(" ") >> split(', ');
+		group['type'] = line >> split(' ') >> [-5];
+		group
+	}; 
+
+fn ed(troop) -> troop["units"]*troop["dmg"];
+sort_troops := \>> map(\(d, t) -> [ed(d), d["initiative"], d, t]) >> sort >> rev >> map(\(_, _, d, t) -> [d, t]);
+fn damage(type, weak, immune, edmg) -> if type >> in(immune) 0 else if type >> in(weak) 2*edmg else edmg;
+fn damage_wrap(from, to) -> damage(from['type'], to['weak'], to['immune'], ed(from));
+dead := \>> ["units"] >> leq(0);
+
+fn select(troops) -> {
+	troops = sort_troops(troops);
+
+	for (d, _) in troops d['targeted'] = false;
+	for (d, _) in troops d['target'] = nil;
+
+	for (troop, good) in troops {
+		best := [-1, 0, 0, nil];
+		for (other, og) in troops if og != good and !other['targeted'] {
+			this := [damage_wrap(troop, other), ed(other), other['initiative'], other];
+			best = max(best, this);
+		}
+		if best[0] <= 0 continue;
+		// if best[-1] == nil continue; // WOW, not specified in input (I think), but gives the incorrect answer...
+		best[-1]['targeted'] = true;
+		troop['target'] = best[-1];
+	} 
+}
+
+fn attack(init_troops) -> {
+	diff := false;
+	for troop in init_troops if troop['target'] != nil and !dead(troop) {
+		target := troop['target'];
+
+		dmg := damage_wrap(troop, target)/target['hp'];
+		target['units'] -= dmg;
+		diff or= dmg > 0;
+	}
+
+	diff
+}
+
+(immune_imm, infection_imm) := input >> split("\n\n") >> map(\>> split('\n') >> [1:] >> map(parse));
+
+fn try_battle(cookie) -> {
+	immune := immune_imm >> deepclone;
+	infection := infection_imm >> deepclone;
+	troops := (immune >> zip(immune >> map(\>> const(true)))) ++ (infection >> zip(infection >> map(\>> const(false)))); 
+	init_troops := troops >> map(\(d, _) -> [d['initiative'], d]) >> sort >> rev >> map(\>> [1]); 
+
+	for d in immune d['dmg'] += cookie;
+
+
+	while true {
+		// Selection phase
+		select(troops);
+
+		// Attack phase
+		if !attack(init_troops) return false;
+
+		// Remove dead units
+		troops = troops >> filter(\>> [0] >> dead >> not);
+
+		if cookie == 0 and (all(immune, dead) or all(infection, dead)) {
+			troops >> map(\>> [0] >> ["units"]) >> sum >> print; 
+		}
+
+		if infection >> all(dead) {
+			return troops >> map(\>> [0] >> ["units"]) >> sum >> print; 
+		} 
+
+		if immune >> all(dead) return false;
+	}
+}
+
+for cookie in [0:1000] {
+	if try_battle(cookie) {
+		break
+	}
+}
