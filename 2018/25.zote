@@ -1,0 +1,22 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim;
+lines := input >> split("\n");
+
+mh := \x, y -> zip(x,y) >> map(\(x, y) -> abs(x - y)) >> sum;
+
+points := lines >> map(ints);
+
+vis := set();
+fn dfs(point) -> {
+	point >> insert(vis);
+	for other in points if mh(point, other) <= 3 and !(other >> in(vis)) dfs(other);
+}
+
+tot := 0;
+for point in points if not(point >> in(vis)) {
+	dfs(point);
+	tot += 1;
+}
+print(tot);
