@@ -1,0 +1,71 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim;
+lines := input >> split("\n");
+
+deps := dict();
+inv := dict();
+nodes := set();
+
+for line in lines {
+    from := line >> split(' ') >> [1];
+    to := line >> split(' ') >> [-3];
+
+    if to >> in(deps) >> not deps[to] = [];
+    from >> push(deps[to]);
+
+    if from >> in(inv) >> not inv[from] = [];
+    to >> push(inv[from]);
+
+    to >> insert(nodes);
+    from >> insert(nodes);
+}
+
+for key in nodes >> keys nodes[key] = false;
+
+// Part 1
+ready := priority_queue();
+for (node, _) in nodes if !in(node, deps) node >> push_pq(-to_ascii(node), ready); 
+
+steps := [];
+
+while ready {
+    node := ready >> pop >> [1];
+    node >> push(steps);
+    nodes[node] = true;
+
+    if node >> in(inv) for other in inv[node] {
+        if all(deps[other], \dep -> nodes[dep]) other >> push_pq(-to_ascii(other), ready);
+    }
+}
+
+steps >> join("") >> print;
+
+
+// Part 2
+for key in nodes >> keys nodes[key] = false;
+work := priority_queue();
+ready := priority_queue();
+for (node, _) in nodes if !in(node, deps) node >> push_pq(-(61 + (to_ascii(node) - to_ascii('A'))), work); 
+
+now := 0;
+while true {
+    if len(work) < 5 and ready {
+        // Assign a new work task
+        node := ready >> pop >> [1];
+        node >> push_pq(now - (61 + (to_ascii(node) - to_ascii('A'))), work); 
+    } else if work {
+        // Wait for next piece to be ready
+        (time, node) := work >> pop;
+        now = time;
+        nodes[node] = true;
+
+        if node >> in(inv) for other in inv[node] {
+            if all(deps[other], \dep -> nodes[dep]) other >> push_pq(-to_ascii(node), ready);
+        }
+    } else break;
+}
+
+now >> neg >> print;
+
