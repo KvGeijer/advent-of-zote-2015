@@ -1,0 +1,48 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim;
+lines := input >> split("\n") >> map(ints);
+
+minr := lines >> map(\>> [0]) >> minimum;
+maxr := lines >> map(\>> [0]) >> maximum;
+minc := lines >> map(\>> [1]) >> minimum;
+maxc := lines >> map(\>> [1]) >> maximum;
+
+rs := maxr - minr;
+cs := maxc - minc;
+
+edge := set();
+d := dict();
+for cord in lines d[cord] = 0;
+d[nil] = 0;
+
+region := 0;
+
+fn closest(at) -> {
+    closest := 999999;
+    choice := nil;
+    td := 0;
+    for cord in lines {
+        dist := manhattan(at, cord);
+        td += dist;
+        if dist < closest {
+            closest = dist;
+            choice = cord;
+        } else if dist == closest {
+            choice = nil;
+        }
+    }
+    if td < 10000 region += 1;
+    choice
+}
+
+// Unsafe coordinates
+for r in [minr - rs*2:maxr + rs*2] for c in [minc - cs*2, maxc + cs*2] closest([r, c]) >> insert(edge);
+for r in [minr - rs*2, maxr + rs*2] for c in [minc - cs*2: maxc + cs*2] closest([r, c]) >> insert(edge);
+
+// Could do a slighgly smarter loop (probably skipping 1/2 of the iterations), or a smarter search
+for r in [minr - rs/2:maxr + rs/2] for c in [minc - cs/2:maxc + cs/2] {c := closest([r, c]); d[c] += 1;};
+
+d >> list >> filter(\>> [0] >> in(edge) >> not) >> map(\>> [1]) >> maximum >> print;
+region >> print;
