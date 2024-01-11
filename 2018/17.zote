@@ -1,0 +1,74 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim;
+lines := input >> split("\n");
+
+rocks := set();
+for line in lines {
+    if line[0] == 'x' {
+        (x, yf, yt) := ints(line);
+        if yf > yt print("ERROR!!!");
+
+        for y in [yf:yt+1] [x, y] >> insert(rocks);
+    }
+    else {
+        (y, xf, xt) := ints(line);
+        if xf > xt print("ERROR!!!");
+
+        for x in [xf:xt+1] [x, y] >> insert(rocks);
+    }
+}
+
+ymax := rocks >> keys >> map(\>> [1]) >> maximum;
+ymin := rocks >> keys >> map(\>> [1]) >> minimum;
+// print(ymax);
+
+settled := set();
+
+pvis := set();
+// Should only be called on nodes not in pvis!
+fn probe(pos, dir) -> {
+    if in(pos, rocks) or in(pos, settled) return true;
+    pos >> insert(pvis);
+
+    below := pos >> vadd([0,1]);
+    if !in(below, settled) and !in(below, rocks) and !dfs(below) return false;
+    
+    next := pos >> vadd(dir);
+    probe(next, dir)
+}
+
+fn fill(pos, dir) -> {
+    if in(pos, rocks) or in(pos, settled) return;
+    pos >> insert(settled);
+
+    next := pos >> vadd(dir);
+    fill(next, dir);
+}
+
+fn dfs(pos) -> {
+    if pos >> in(pvis) return in(pos, settled);
+    if pos[1] > ymax return false;
+    pos >> insert(pvis);
+
+    below := pos >> vadd([0,1]);
+    if in(below, rocks) or in(below, settled) or dfs(below) {
+        // Check if we should fill!
+        left := pos >> vadd([-1, 0]);
+        right := pos >> vadd([1, 0]);
+
+        if probe(left, [-1, 0]) + probe(right, [1, 0]) == 2{
+            pos >> insert(settled);
+            fill(left, [-1, 0]);
+            fill(right, [1, 0]);
+            return true;
+        }
+    }
+    false
+}
+
+dfs([500, 0]);
+len(pvis) - ymin >> print;
+settled >> len >> print;
+
