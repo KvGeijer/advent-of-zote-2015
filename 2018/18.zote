@@ -1,0 +1,46 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim;
+
+land := dict();
+parse_matrix_dict(input, land);
+
+fn res(land) -> (land >> values >> filter(\>> eq('#')) >> len) * (land >> values >> filter(\>> eq('|')) >> len);
+
+pattern := [];
+for time in [0:800] { // played around and found 800 to be ok by hand. Really 600 would also work. Could do dynamic checks as well.
+    next := dict();
+    for (pos, past) in land {
+        neighs := neighs8(pos) >> filter(\>> in(land)) >> map(\at -> land[at]);
+        next[pos] = 
+            if past == '.' and (neighs >> filter(\>> eq('|')) >> len >> geq(3))
+                '|'
+            else if past == '|' and (neighs >> filter(\>> eq('#')) >> len >> geq(3))
+                '#'
+            else if past == '#' 
+                if (neighs >> filter(\>> eq('#')) >> len >> geq(1)) and (neighs >> filter(\>> eq('|')) >> len >> geq(1)) 
+                    '#'
+                else 
+                    '.'
+            else
+                past;
+
+    }
+    land = next;
+
+    if time == 9 res(land) >> print;
+    res(land) >> push(pattern);
+}
+
+for l in [10:100] {
+    if pattern[-l:] == pattern[-2*l:-l] {
+        left := 1000000000 - len(pattern);
+        off := left % l;
+        pattern[-l+off - 1] >> print;
+        
+        
+        break
+    }
+}
+
