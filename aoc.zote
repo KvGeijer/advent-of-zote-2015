@@ -101,3 +101,13 @@ fn manhattan(p1, p2) -> zip(p1, p2) >> map(\(x, y) -> abs(x - y)) >> sum;
 
 /// Difference of all successive points (disc derivative)
 fn diff(seq) -> zip(seq[1:], seq) >> map(\(x, y) -> x - y);
+
+/// Rotate a 2D vector 90 deg clockwise (right)
+fn rot_right((x, y)) -> [y, -x];
+
+/// Rotate a 2D vector 90 deg counter clockwise (left)
+fn rot_left((x, y)) -> [-y, x];
+
+/// Rotate a 2D vector 90 deg counter clockwise (left)
+fn rot_back((x, y)) -> [-x, -y];
+
