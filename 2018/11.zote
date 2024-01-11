@@ -1,0 +1,48 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim;
+serial := input >> ints >> [0];
+
+// One for column major and one row major.
+grid := [0:301] >> map(\_ -> [0:301] >> map(\>> const(0)));
+gridy := grid >> deepclone;
+neighs := dict();
+
+for x in [0:302] for y in [0:302] neighs[[x, y]] = 0;
+
+// Part 1
+for x in [1:301] for y in [1:301] {
+    rack := x + 10;
+    pow := rack*y + serial;
+    pow *= rack;
+    pow = pow/100;
+    pow = pow % 10;
+    pow -= 5;
+
+    grid[x][y] = pow; 
+    gridy[y][x] = pow; 
+
+    for neigh in neighs9([x, y]) {
+        neighs[neigh] += pow;
+    }
+}
+
+neighs >> list >> map(rev) >> maximum >> [1] >> map(\>> sub(1)) >> map(str) >> join(",") >> print;
+
+// Part 2 (reuse grids)
+best := [0, [nil, nil], -1];
+
+for x in [1:301] for y in [1:301] {
+    pow := 0;
+    for size in [1:301 - max(x, y)] {
+        pow += gridy[y+size-1][x:x+size] >> sum;
+        pow += grid[x+size-1][y:y+size-1] >> sum;
+
+        if pow > best[0] best = [pow, x, y, size];
+    }
+}
+
+best >> [1:] >> map(str) >> join(',') >> print;
+     
+
