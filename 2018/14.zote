@@ -1,0 +1,28 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim >> int;
+ilist := str(input) >> map(int);
+
+recs := [3, 7];
+p1 := 0;
+p2 := 1;
+
+il := len(ilist);
+
+while true {
+    tot := recs[p1] + recs[p2];
+    if tot > 9 {
+        1 >> push(recs);
+        if recs[-il:] == ilist break;
+    } 
+    tot % 10 >> push(recs);
+    if recs[-il:] == ilist break;
+
+    p1 = (1 + p1 + recs[p1]) % len(recs);
+    p2 = (1 + p2 + recs[p2]) % len(recs);
+}
+
+recs[input:input+10] >> map(str) >> join('') >> print;
+print(len(recs) - il);
+
