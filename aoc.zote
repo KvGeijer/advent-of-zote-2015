@@ -95,3 +95,9 @@ fn count(items) -> {
 	}
 	counter
 }
+
+/// Manhattan distance for 2D points
+fn manhattan(p1, p2) -> zip(p1, p2) >> map(\(x, y) -> abs(x - y)) >> sum; 
+
+/// Difference of all successive points (disc derivative)
+fn diff(seq) -> zip(seq[1:], seq) >> map(\(x, y) -> x - y);

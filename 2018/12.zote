@@ -1,0 +1,48 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim;
+lines := input >> split("\n");
+
+rules := set();
+for line in lines[1:] if line[-1] == '#' {
+    bin := 0;
+    for (pow, c) in line[:5] >> enumerate if c == '#' bin += 2^pow;
+    bin >> insert(rules);
+}
+
+// Should have a defaultdict...
+pots := dict();
+
+for (i, c) in lines[0] >> split(' ') >> [-1] >> enumerate {
+    // pot at i
+    if c == '#' for pow in [0:5] {
+        pots[i-pow+2] = get_or(i-pow+2, pots, 0) + 2^pow;
+    }
+}
+
+sim_iter := 5000; // Just play around to find
+pattern := [];
+for gen in [0:sim_iter] {
+    grown := [];
+    next := dict();
+    for (index, bin) in pots {
+        if bin >> in(rules) {
+            index >> push(grown);
+            for pow in [0:5] {
+                next[index-pow+2] = get_or(index-pow+2, next, 0) + 2^pow;
+            }
+        }
+    }
+
+    grown >> sum >> push(pattern);
+    if gen == 19 print(pattern[-1]);
+    pots = next;
+}
+
+der := diff(pattern)[-1];
+
+iter := 50000000000;
+left := iter - sim_iter;
+
+(pattern[-1] + left*der) >> print;
