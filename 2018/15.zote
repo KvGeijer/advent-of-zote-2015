@@ -1,0 +1,146 @@
+include!("stdlib");
+include!("aoc.zote");
+
+input := read("input") >> trim;
+lines := input >> split("\n") >> map(\>> map(id));
+
+troops := [];
+
+for (row, line) in lines >> enumerate for (col, c) in line >> enumerate {
+    if c == 'G' lines[row][col] = [[row, col], 200, 3, false] >> push(troops);
+    if c == 'E' lines[row][col] = [[row, col], 200, 3, true] >> push(troops);
+}
+
+troops_static := troops >> deepclone;
+lines_static := lines >> deepclone;
+
+
+// troops >> map(print);
+// print("Starting");
+
+fn done() -> {
+    // print(troops);
+    f := troops[0][-1];
+    for troop in troops if troop[-1] != f and troop[1] > 0 return false;
+    true
+}
+
+fn attack(troop, targets) -> {
+    // print("Attacking");
+    target := targets >> map(\target -> [target[1], target]) >> minimum >> [1];
+    target[1] -= troop[2];
+    target
+}
+
+fn try_attack(troop) -> {
+    // Are we already in range?
+    targets := [];
+    for (r, c) in neighs4(troop[0]) {
+        n := lines[r][c];
+        if len(n) > 1 and n[-1] != troop[-1] and n[1] > 0 {
+            n >> push(targets);
+        }
+    }
+
+    if targets {
+        target := attack(troop, targets);
+        if target[1] <= 0 lines[target[0][0]][target[0][1]] = '.';
+        return true;
+    }
+
+    false
+}
+
+fn move(troop) -> {
+    // Do a bfs to find the closest enemy
+    // print("Trying to move");
+    vis := set();
+    poss := [];
+    for neigh in neighs4(troop[0]) if lines[neigh[0]][neigh[1]] == '.' [neigh, neigh] >> push(poss);
+
+    in_range = [];
+
+    while !in_range and poss {
+        // print("In range: ", poss);
+        next := [];
+        for (pos, start) in poss {
+            for neigh in neighs4(pos) if !in(neigh, vis) {
+                if lines[neigh[0]][neigh[1]] == '.' {
+                    neigh >> insert(vis);
+                    [neigh, start] >> push(next);
+                }
+                else if len(lines[neigh[0]][neigh[1]]) > 1 and lines[neigh[0]][neigh[1]][-1] != troop[-1] {
+                    [neigh, start] >> push(in_range);
+                }
+            } 
+        }
+        poss = next;
+    }
+
+    if in_range {
+        // print("move");
+        lines[troop[0][0]][troop[0][1]] = '.';
+        troop[0] = in_range >> minimum >> [1];
+        lines[troop[0][0]][troop[0][1]] = troop;
+    } else {
+        // print("cound not move");
+    }
+}
+
+fn dbg() -> {
+    for line in lines {
+        row := "";
+        hps := [];
+        for c in line if c == '.' or c == '#' c >> push(row) 
+            else if c[-1] {'E' >> push(row); ('E' ++ str(c[1])) >> push(hps)} 
+            else {'G' >> push(row); ('G' ++ str(c[1])) >> push(hps)};
+        (row ++ '   ' ++ join(hps, ', ')) >> print;
+    }
+}
+
+ec := troops_static >> filter(\>> [-1]) >> len;
+fn fight(atk) -> {
+    troops = troops_static >> deepclone;
+    lines = lines_static >> deepclone;
+    for troop in troops lines[troop[0][0]][troop[0][1]] = troop;
+
+    for troop in troops if troop[-1] troop[-2] = atk;
+
+    round := 0;
+    while true {
+        // dbg();
+        troops = troops >> sort;
+        round += 1;
+
+        for troop in troops if troop[1] > 0 {
+            if done() {
+                troops = troops >> filter(\>> [1] >> gt(0));
+                outcome := troops >> map(\>> [1]) >> sum >> mul(round-1);
+                edom := troops[0][-1] and len(troops) == ec;
+                return [outcome, edom];
+            
+            }
+            if !try_attack(troop) {
+                move(troop);
+                try_attack(troop); 
+            }
+        
+        }
+
+        troops = troops >> filter(\>> [1] >> gt(0));
+        // print('');
+        // dbg();
+
+    }
+
+}
+
+fight(3) >> [0] >> print;
+
+for atk in [3:200] {
+    res := fight(atk);
+    if res[1] {
+        res[0] >> print;
+        break;
+    }
+}
